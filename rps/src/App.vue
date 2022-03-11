@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <Home />
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import Home from "./components/home.vue";
 
 export default {
   name: "App",
   components: {
-    HelloWorld,
+    Home,
   },
 };
 </script>
@@ -31,8 +31,14 @@ export default {
   --rock-2: hsl(349, 70%, 56%);
   --shadow-light: #00000026;
   --shadow-med: #0000004d;
+  --green-low: hsl(120, 78%, 49%);
+  --green-high: hsl(120, 81%, 62%);
 }
 body {
   background: radial-gradient(at top, var(--bg-grad-1), var(--bg-grad-2));
+  overflow: hidden;
+}
+body::-webkit-scrollbar {
+  display: none;
 }
 </style>
