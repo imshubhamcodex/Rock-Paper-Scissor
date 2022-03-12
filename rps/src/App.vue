@@ -41,4 +41,15 @@ body {
 body::-webkit-scrollbar {
   display: none;
 }
+#aside-hidden-left > .v-navigation-drawer__content::-webkit-scrollbar {
+  width: 0.5rem;
+  padding: 0;
+}
+#aside-hidden-left > .v-navigation-drawer__content::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+}
+#aside-hidden-left > .v-navigation-drawer__content::-webkit-scrollbar-thumb {
+  background-color: black;
+  border-radius: 0.5rem;
+}
 </style>

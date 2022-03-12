@@ -78,7 +78,7 @@ export default {
       }
     },
     startTimer() {
-      this.timer = 8;
+      this.timer = 3;
       this.timerInterval = setInterval(() => {
         this.timer--;
         if (this.timer === 0) {

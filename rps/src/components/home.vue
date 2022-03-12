@@ -16,7 +16,7 @@
 
     <v-navigation-drawer permanent class="aside-nav-right" app clipped right>
       <v-list>
-        <v-list-item v-for="n in 1" :key="n">
+        <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="v-list-item-title">
               <div
@@ -171,7 +171,7 @@
         <v-list-item v-for="(item, n) in left_icon" :key="item.link" link>
           <v-list-item-content style="padding-bottom: 1px">
             <v-list-item-title class="v-list-item-title">
-              <div>
+              <div @click="openLeftPanel(item.text)">
                 <v-icon style="color: white" class="pl-1 left-icon">{{
                   item.icon
                 }}</v-icon>
@@ -179,7 +179,7 @@
               </div>
               <div
                 v-if="n === left_icon.length - 1"
-                style="position: absolute; bottom: -320px"
+                style="position: absolute; bottom: -330px"
               >
                 <span style="font-size: 12px; color: white; padding-left: 4px">
                   {{ online_players }}</span
@@ -192,8 +192,391 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main class="bg-color--primary" id="main">
-      <div style="">
+    <v-navigation-drawer
+      permanent
+      class="ml-16"
+      id="aside-hidden-left"
+      app
+      clipped
+      left
+      v-if="
+        this.showHistory ||
+        this.showLeaders ||
+        this.showSettings ||
+        this.showSupport
+      "
+    >
+      <!--User-->
+
+      <v-list v-if="showSettings">
+        <h3 style="color: white; font-family: monospace" class="ml-5">
+          Settings
+        </h3>
+        <v-list-item>
+          <v-list-item-content style="padding-bottom: 1px">
+            <template>
+              <v-card class="history-cards" max-width="344" outlined>
+                <v-card-title>
+                  <span style="zoom: 0.8" class="ml-n3">{{ user.rank }}.</span>
+
+                  <h5 style="color: white; zoom: 0.9" class="ml-1">
+                    {{ user.name }}
+                  </h5>
+                  <v-spacer></v-spacer>
+                  <span
+                    v-if="user.rank <= 50"
+                    style="zoom: 0.7; float: right"
+                    class="mr-n5"
+                    >👑</span
+                  >
+                </v-card-title>
+                <v-card-subtitle>
+                  <div class="row bright">
+                    <div>
+                      <h3>WINS:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ user.wins }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="row bright">
+                    <div>
+                      <h3>DRAWS:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ user.draw }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="row bright">
+                    <div>
+                      <h3>LOSSES:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ user.loss }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="row bright">
+                    <div>
+                      <h3>TOTAL BET:</h3>
+                    </div>
+                    <div>
+                      <h3>
+                        {{
+                          Number(user.wins) +
+                          Number(user.loss) +
+                          Number(user.draw)
+                        }}
+                      </h3>
+                    </div>
+                  </div>
+                  <div class="row bright">
+                    <div>
+                      <h3>COUNTRY:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ user.country.toUpperCase() }}</h3>
+                    </div>
+                  </div>
+                  <div class="row bright">
+                    <div>
+                      <h3>ACTIVE ON:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ user.last_login }}</h3>
+                    </div>
+                  </div>
+                </v-card-subtitle>
+              </v-card>
+            </template>
+          </v-list-item-content>
+        </v-list-item>
+        <div class="mt-7 mb-3">
+          <v-btn dark color="blue" class="ma-2 white--text" style="width:93.5%">
+            LOGOUT
+            <v-icon right dark> mdi-logout </v-icon>
+          </v-btn>
+        </div>
+      </v-list>
+
+      <!--Support-->
+
+      <v-list v-if="showSupport">
+        <h3 style="color: white; font-family: monospace" class="ml-5">
+          Support Fourm
+        </h3>
+        <v-list-item>
+          <v-list-item-content style="padding-bottom: 1px">
+            <template>
+              <v-card class="history-cards" max-width="344" outlined>
+                <v-card-subtitle>
+                  <div class="mt-2" style="color: white">
+                    <v-text-field
+                      dark
+                      disabled
+                      v-model="username"
+                      label="Username"
+                      outlined
+                      clearable
+                      dense
+                    ></v-text-field>
+                  </div>
+                  <div class="mt-3" style="color: white">
+                    <v-textarea
+                      id="support-text"
+                      outlined
+                      name="input-7-4"
+                      label="Message"
+                      color="error"
+                      dark
+                      placeholder="Type your query here"
+                      @keyup="updateSupportQuery"
+                      @focus="updateSupportQuery"
+                    ></v-textarea>
+                  </div>
+                  <div class="mt-3">
+                    <v-btn
+                      dark
+                      color="blue"
+                      class="ma-2 white--text"
+                      :disabled="support_query.trim() === '' ? true : false"
+                    >
+                      SEND
+                      <v-icon right dark> mdi-send </v-icon>
+                    </v-btn>
+                  </div>
+                </v-card-subtitle>
+              </v-card>
+            </template>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+
+      <!--Leaders-->
+
+      <v-list v-if="showLeaders">
+        <h3 style="color: white; font-family: monospace" class="ml-5">
+          Leaders
+        </h3>
+        <v-list-item v-for="(item, n) in leaders" :key="item.id + 'leader'">
+          <v-list-item-content style="padding-bottom: 1px">
+            <template>
+              <v-card class="history-cards" max-width="344" outlined>
+                <v-card-title>
+                  <span style="zoom: 0.8" class="ml-n3">{{ n + 1 }}.</span>
+
+                  <h5 style="color: white; zoom: 0.9" class="ml-1">
+                    {{ item.name }}
+                  </h5>
+                  <v-spacer></v-spacer>
+                  <span style="zoom: 0.7; float: right" class="mr-n5">👑</span>
+                </v-card-title>
+                <v-card-subtitle>
+                  <div class="row bright">
+                    <div>
+                      <h3>WINS:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ item.wins }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="row bright">
+                    <div>
+                      <h3>DRAWS:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ item.draw }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="row bright">
+                    <div>
+                      <h3>LOSSES:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ item.loss }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="row bright">
+                    <div>
+                      <h3>TOTAL BET:</h3>
+                    </div>
+                    <div>
+                      <h3>
+                        {{
+                          Number(item.wins) +
+                          Number(item.loss) +
+                          Number(item.draw)
+                        }}
+                      </h3>
+                    </div>
+                  </div>
+                  <div class="row bright">
+                    <div>
+                      <h3>COUNTRY:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ item.country.toUpperCase() }}</h3>
+                    </div>
+                  </div>
+                  <div class="row bright">
+                    <div>
+                      <h3>ACTIVE ON:</h3>
+                    </div>
+                    <div>
+                      <h3>{{ item.last_login }}</h3>
+                    </div>
+                  </div>
+                </v-card-subtitle>
+              </v-card>
+            </template>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+
+      <!--History-->
+      <v-list v-if="showHistory">
+        <h3 style="color: white; font-family: monospace" class="ml-5">
+          History
+        </h3>
+        <v-list-item v-for="item in history" :key="item.id">
+          <v-list-item-content style="padding-bottom: 1px">
+            <template>
+              <v-card class="history-cards" max-width="344" outlined>
+                <v-card-title>
+                  <h5
+                    :class="{
+                      win: item.result.toLowerCase() === 'win',
+                      loss: item.result.toLowerCase() === 'loss',
+                      draw: item.result.toLowerCase() === 'draw',
+                    }"
+                  >
+                    {{ item.result }}
+                  </h5>
+                  <v-spacer></v-spacer>
+                  <span
+                    v-if="item.result.toLowerCase() === 'win'"
+                    style="zoom: 0.8"
+                    >😀</span
+                  >
+                  <span
+                    v-if="item.result.toLowerCase() === 'loss'"
+                    style="zoom: 0.8"
+                    >😞</span
+                  >
+                  <span
+                    v-if="item.result.toLowerCase() === 'draw'"
+                    style="zoom: 0.8"
+                    >😐</span
+                  >
+                </v-card-title>
+
+                <v-card-subtitle>
+                  <h5 style="color: white">
+                    Now total amount is $
+                    <span
+                      :class="{
+                        win: item.result.toLowerCase() === 'win',
+                        loss: item.result.toLowerCase() === 'loss',
+                        draw: item.result.toLowerCase() === 'draw',
+                      }"
+                      >{{ item.total_amt }}</span
+                    >
+                  </h5>
+                </v-card-subtitle>
+                <v-card-actions class="mt-n8">
+                  <v-spacer></v-spacer>
+
+                  <v-btn icon @click="item.show = !item.show">
+                    <v-icon style="color: aqua">{{
+                      item.show ? "mdi-chevron-up" : "mdi-chevron-down"
+                    }}</v-icon>
+                  </v-btn>
+                </v-card-actions>
+
+                <v-expand-transition>
+                  <div v-show="item.show">
+                    <v-divider></v-divider>
+                    <hr style="border: 0.5px solid silver" />
+                    <v-card-text>
+                      <div class="row">
+                        <div style="zoom: 0.6">
+                          <h3>Opponent chosen</h3>
+                          <img
+                            v-if="item.opponent === 'paper'"
+                            src="../assets/icon-paper.svg"
+                          />
+                          <img
+                            v-else-if="item.opponent === 'scissor'"
+                            src="../assets/icon-scissors.svg"
+                          />
+                          <img
+                            v-else-if="item.opponent === 'rock'"
+                            src="../assets/icon-rock.svg"
+                          />
+                        </div>
+                        <div>
+                          <h6>VS</h6>
+                        </div>
+                        <div style="zoom: 0.6">
+                          <h3>You chosen</h3>
+                          <img
+                            style="float: right"
+                            v-if="item.you === 'paper'"
+                            src="../assets/icon-paper.svg"
+                          />
+                          <img
+                            style="float: right"
+                            v-else-if="item.you === 'scissor'"
+                            src="../assets/icon-scissors.svg"
+                          />
+                          <img
+                            style="float: right"
+                            v-else-if="item.you === 'rock'"
+                            src="../assets/icon-rock.svg"
+                          />
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div>
+                          <h5>Your bet :</h5>
+                        </div>
+                        <div>
+                          <h5>${{ item.amount }}</h5>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div>
+                          <h5>Time:</h5>
+                        </div>
+                        <div>
+                          <h5>{{ item.time }}</h5>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div>
+                          <h5>Date:</h5>
+                        </div>
+                        <div>
+                          <h5>{{ item.date }}</h5>
+                        </div>
+                      </div>
+                    </v-card-text>
+                  </div>
+                </v-expand-transition>
+              </v-card>
+            </template>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-main class="bg-color--primary" id="main" style="">
+      <div id="game_div">
         <Game v-if="!showResult" />
         <Result
           @resetGame="resetGame()"
@@ -256,6 +639,11 @@ export default {
     time_left: "",
     showResult: false,
     low_fund: false,
+    opened_panel: null,
+    showHistory: false,
+    showLeaders: false,
+    showSupport: false,
+    showSettings: false,
     left_icon: [
       {
         icon: "mdi-history",
@@ -278,6 +666,83 @@ export default {
         link: "/setting",
       },
     ],
+    history: [
+      {
+        id: 1,
+        result: "Win",
+        amount: "1000",
+        date: "2020-01-01",
+        time: "12:00:10",
+        total_amt: "2000",
+        show: false,
+        you: "paper",
+        opponent: "rock",
+      },
+      {
+        id: 2,
+        result: "Win",
+        amount: "2000",
+        date: "2020-01-01",
+        time: "10:12:12",
+        total_amt: "1500",
+        show: false,
+        you: "rock",
+        opponent: "scissor",
+      },
+      {
+        id: 3,
+        result: "Loss",
+        amount: "1000",
+        date: "2020-01-01",
+        time: "12:00:10",
+        total_amt: "2000",
+        show: false,
+        you: "rock",
+        opponent: "paper",
+      },
+      {
+        id: 4,
+        result: "Draw",
+        amount: "2000",
+        date: "2020-01-01",
+        time: "10:12:12",
+        total_amt: "2000",
+        show: false,
+        you: "paper",
+        opponent: "paper",
+      },
+    ],
+    leaders: [
+      {
+        id: 1,
+        name: "John Doe",
+        wins: "10",
+        loss: "5",
+        draw: "2",
+        country: "USA",
+        last_login: "2020-01-01",
+      },
+      {
+        id: 2,
+        name: "Baby boss",
+        wins: "19",
+        loss: "1",
+        draw: "8",
+        country: "India",
+        last_login: "2020-03-01",
+      },
+    ],
+    user: {
+      rank: 30,
+      name: "Boss 101",
+      wins: "109",
+      loss: "1",
+      draw: "8",
+      country: "ITLY",
+      last_login: "2025-05-01",
+    },
+    username: "username",
+    support_query: "",
   }),
   methods: {
     resetGame() {
@@ -316,6 +781,44 @@ export default {
         this.amount -= 3;
       } else {
         this.amount = 0;
+      }
+    },
+    updateSupportQuery() {
+      this.support_query = document.getElementById("support-text").value;
+
+      console.log(this.support_query);
+    },
+    openLeftPanel(panel) {
+      if (this.opened_panel == panel) {
+        this.opened_panel = null;
+        this.showHistory = false;
+        this.showLeaders = false;
+        this.showSupport = false;
+        this.showSettings = false;
+      } else {
+        this.opened_panel = panel;
+
+        if (panel.toLowerCase() == "history") {
+          this.showHistory = true;
+          this.showLeaders = false;
+          this.showSupport = false;
+          this.showSettings = false;
+        } else if (panel.toLowerCase() == "leaders") {
+          this.showHistory = false;
+          this.showLeaders = true;
+          this.showSupport = false;
+          this.showSettings = false;
+        } else if (panel.toLowerCase() == "support") {
+          this.showHistory = false;
+          this.showLeaders = false;
+          this.showSupport = true;
+          this.showSettings = false;
+        } else if (panel.toLowerCase() == "setting") {
+          this.showHistory = false;
+          this.showLeaders = false;
+          this.showSupport = false;
+          this.showSettings = true;
+        }
       }
     },
     choice(choice) {
@@ -397,6 +900,10 @@ export default {
     },
 
     incAni(i, end_num) {
+      if (i < 0) {
+        this.demo_amount = 0;
+        return;
+      }
       if (i < end_num) {
         i++;
         this.demo_amount = i;
@@ -442,10 +949,32 @@ export default {
       this.$store.state.demo_money
     );
   },
+  watch: {
+    opened_panel(val) {
+      if (val !== null) {
+        document.getElementById("game_div").style.paddingLeft = "250px";
+      } else {
+        document.getElementById("game_div").style.paddingLeft = "40px";
+      }
+    },
+  },
 };
 </script>
 
 <style scoped>
+.win {
+  color: rgb(17, 209, 17);
+}
+.loss {
+  color: red;
+}
+.draw {
+  color: orange;
+}
+.bright {
+  color: white;
+  zoom: 0.7;
+}
 .bg-color--primary {
   background: radial-gradient(at top, var(--bg-grad-1), var(--bg-grad-2));
 }
@@ -472,8 +1001,6 @@ export default {
   color: white !important;
   font-family: monospace;
 }
-.box {
-}
 .box:hover {
   cursor: pointer;
   background: white;
@@ -486,6 +1013,24 @@ export default {
   color: white !important;
   padding-left: 89px !important;
   padding-right: 185px !important;
+}
+#aside-hidden-left {
+  height: 100% !important;
+  max-height: 92vh !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+.history-cards {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  color: aqua !important;
+  font-family: monospace;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+#game_div {
+  padding-left: 40px;
+  padding-top: 3px;
 }
 
 @-moz-keyframes spin {
